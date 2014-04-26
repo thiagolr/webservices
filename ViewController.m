@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import <AFNetworking/AFNetworking.h>
 
 @interface ViewController ()
 
@@ -33,7 +34,7 @@
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
-    //[self loadLoans];
+    [self loadLoans];
 }
 
 - (void)didReceiveMemoryWarning
@@ -79,6 +80,23 @@
     
     cell.textLabel.text = [NSString stringWithFormat:@"%@ from %@", name, country];
     cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ USD %@", amount, use];
+}
+
+- (void)loadLoans {
+    NSMutableURLRequest* req = [[AFJSONRequestSerializer serializer] requestWithMethod:@"GET" URLString:@"http://api.kivaws.org/v1/loans/search.json?status=fundraising" parameters:nil error:nil];
+    
+    AFHTTPRequestOperation* op = [[AFHTTPRequestOperation alloc] initWithRequest:req];
+    op.responseSerializer = [AFJSONResponseSerializer serializer];
+    
+    [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation* operation, id response) {
+        NSDictionary* res = (NSDictionary*) response;
+        self.loans = res[@"loans"];
+        [self.tableView reloadData];
+    } failure:^(AFHTTPRequestOperation* operation, NSError* error) {
+        NSLog(@"Error: %@", error);
+    }];
+    
+    [op start];
 }
 
 /*
